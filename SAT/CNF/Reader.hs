@@ -1,7 +1,7 @@
 {-# LANGUAGE Safe #-}
 -- | Read a CNF file without haskell-platform
 
-module SAT.CNFReader
+module SAT.CNF.Reader
        (
          -- * Interface
          fromFile
