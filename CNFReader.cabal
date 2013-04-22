@@ -2,7 +2,7 @@
 -- see http://haskell.org/cabal/users-guide/
 
 name:                CNFReader
-version:             0.1.1.0
+version:             0.1.1.1
 synopsis:            CNF reader
 description:
 

@@ -94,20 +94,30 @@ parseCNF = do
 -- |driver:: String -> Either ParseError Int
 driver input = readP_to_S (parseClauses 1) input
 
--- |read a CNF file and return a list:
--- ((numbefOfVariablesInUse, numberOfClauses), [Literal])
+-- |read a CNF file and return:
+-- ((numbefOfVariables, numberOfClauses), [Literal])
+--
+-- >>> cnf <- fromFile "acnf"
+-- >>> cnf
+-- ((3, 4), [[1, 2], [-2, 3], [-1, 2, -3], [3]]
+--
 {-# INLINE fromFile #-}
 fromFile :: FilePath -> IO (Maybe ((Int, Int), [[Int]]))
-fromFile filename = do
-  c <- readFile filename
+fromFile f = do
+  c <- readFile f
   case readP_to_S parseCNF c of
     [(a, _)] -> return $ Just a
     _ -> return Nothing
 
--- | return clauses as [[Int]]
+-- | return clauses as [[Int]] from 'file'
+--
+-- >>> l <- clauseListFromFile "a.cnf"
+-- >>> l
+-- [[1, 2], [-2, 3], [-1, 2, -3], [3]]
+--    
 clauseListFromFile :: FilePath -> IO [[Int]]
-clauseListFromFile file = do
-  res <- fromFile file
+clauseListFromFile l = do
+  res <- fromFile l
   case res of
     Just (_, l) -> return l
     _ -> return []

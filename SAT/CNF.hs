@@ -1,6 +1,6 @@
 {-# LANGUAGE Safe #-}
--- | Read a CNF file without haskell-platform
 
+-- | Read/Write a CNF file only with ghc standard libraries
 module SAT.CNF
        (
          -- * Input
