@@ -97,8 +97,7 @@ driver input = readP_to_S (parseClauses 1) input
 -- |read a CNF file and return:
 -- ((numbefOfVariables, numberOfClauses), [Literal])
 --
--- >>> cnf <- fromFile "acnf"
--- >>> cnf
+-- >>> fromFile "acnf"
 -- ((3, 4), [[1, 2], [-2, 3], [-1, 2, -3], [3]]
 --
 {-# INLINE fromFile #-}
@@ -111,8 +110,7 @@ fromFile f = do
 
 -- | return clauses as [[Int]] from 'file'
 --
--- >>> l <- clauseListFromFile "a.cnf"
--- >>> l
+-- >>> clauseListFromFile "a.cnf"
 -- [[1, 2], [-2, 3], [-1, 2, -3], [3]]
 --    
 clauseListFromFile :: FilePath -> IO [[Int]]
