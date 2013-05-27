@@ -2,7 +2,7 @@
 -- see http://haskell.org/cabal/users-guide/
 
 name:                CNFReader
-version:             0.1.2.1
+version:             0.1.3.1
 synopsis:            CNF reader
 description:
 
@@ -27,4 +27,5 @@ library
   ghc-options:		  
   default-language:	  Haskell2010
   exposed-modules:     SAT.CNF, SAT.CNF.Reader, SAT.CNF.Writer, SAT.CNF.MinisatReader
+               SAT.BoolExp
   build-depends:       base ==4.6.*

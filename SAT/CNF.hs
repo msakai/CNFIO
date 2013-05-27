@@ -11,9 +11,16 @@ module SAT.CNF
          -- * Output
        , toFile
        , toCNFString
+         -- * Bool Operation
+       , BoolForm(..)
+       , neg
+       , (-|-)
+       , (-&-)
+       , asList
        )
        where
 import SAT.CNF.Reader
 import SAT.CNF.Writer
 import SAT.CNF.MinisatReader
+import SAT.BoolExp
 
