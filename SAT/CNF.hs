@@ -12,7 +12,6 @@ module SAT.CNF
        , toFile
        , toCNFString
          -- * Bool Operation
-       , BoolForm(..)
        , neg
        , (-|-)
        , (-&-)
