@@ -16,6 +16,7 @@ module SAT.CNF
        , (-|-)
        , (-&-)
        , asList
+       , asLatex
        )
        where
 import SAT.CNF.Reader

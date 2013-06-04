@@ -13,8 +13,10 @@ module SAT.BoolExp
        , neg
          -- * Convert function
        , asList
+       , asLatex
        )
        where
+import Data.List (intercalate)
 
 class BoolComponent a where
   -- | lift to BoolForm
@@ -123,3 +125,18 @@ combinationOf [] = []
 combinationOf [x] = [[a] | a <-x]
 combinationOf (x:l) = concat [map (a :) l' | a <- x, let l' = combinationOf l]
 
+-- | make latex string from CNF
+--
+-- >>> asLatex $ "3" -|- "4" 
+-- "\\begin{displaymath}\n( x_{3} \\vee x_{4} )\n\\end{displaymath}\n"
+--
+asLatex :: BoolForm -> String
+asLatex b = beg ++ s ++ end
+  where
+    beg = "\\begin{displaymath}\n"
+    end = "\n\\end{displaymath}\n"
+    s = intercalate " \\wedge " [ makeClause c | c <- asList b]
+    makeClause c = "(" ++ intercalate "\\vee" [makeLiteral l | l <- c] ++ ")"
+    makeLiteral l
+      | 0 < l = " x_{" ++ show l ++ "} "
+      | otherwise = " \\neg " ++ "x_{" ++ show (negate l) ++ "} "
