@@ -58,6 +58,15 @@ problemLine = do
 -- |Parse something like: c This in an example of a comment line.
 {-# INLINE commentLines #-}
 commentLines = do
+  l <- look
+  if (head l)  == 'c'
+    then do
+      munch ('\n' /=)
+      newline
+      commentLines
+    else return ()
+
+_commentLines = do
   char 'c'
   munch ('\n' /=)
   newline
