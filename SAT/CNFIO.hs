@@ -1,7 +1,7 @@
 {-# LANGUAGE Safe #-}
 
 -- | Read/Write a CNF file only with ghc standard libraries
-module SAT.CNF
+module SAT.CNFIO
        (
          -- * Input
          fromFile
@@ -19,8 +19,8 @@ module SAT.CNF
        , asLatex
        )
        where
-import SAT.CNF.Reader
-import SAT.CNF.Writer
-import SAT.CNF.MinisatReader
+import SAT.CNFIO.Reader
+import SAT.CNFIO.Writer
+import SAT.CNFIO.MinisatReader
 import SAT.BoolExp
 
