@@ -1,4 +1,5 @@
 CNFReader
 =========
 
-CNF reader for Haskell
+ * Read/Write DIMACS CNF
+ * Calculate basic Boolean Operations

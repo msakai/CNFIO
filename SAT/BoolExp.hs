@@ -10,6 +10,8 @@ module SAT.BoolExp
          -- * Expression contructors
          (-|-)
        , (-&-)
+       , (-!-)
+       , (->-)
        , neg
          -- * Convert function
        , asList
@@ -63,6 +65,20 @@ a -&- b = toBF a -&&- toBF b
 --
 neg :: (BoolComponent a) => a -> BoolForm
 neg a = negBF $ toBF a
+
+(-!-) :: (BoolComponent a) => a -> BoolForm
+(-!-) = neg
+
+-- | implication
+--
+-- >>> asList ("1" ->- "2")
+-- -[[1,-2]]
+--
+-- >>> asList $ ("1" -&- "2") ->- ("3" -|- "4")
+-- [[-1,-2,3,4]]
+--
+(->-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
+a ->- b = neg (toBF a) -|- toBF b
 
 instance BoolComponent Int where
   toBF a = Lit a
