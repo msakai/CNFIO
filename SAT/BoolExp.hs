@@ -7,12 +7,18 @@
 --
 module SAT.BoolExp 
        ( 
+         -- * Class & Type
+         BoolComponent (..)
+       , BoolForm (..)
          -- * Expression contructors
-         (-|-)
+       , (-|-)
        , (-&-)
        , (-!-)
        , (->-)
        , neg
+         -- * List Operation
+       , disjunctionOf
+       , conjunctionOf
          -- * Convert function
        , asList
        , asLatex
@@ -104,12 +110,21 @@ instance BoolComponent BoolForm where
 (-||-) cnf@(Cnf _) (Cnf cs) = foldr (\c cnf -> cnf -||- c) cnf cs
 (-||-) a b = b -||- a
 
+-- | merge [BoolForm] by '(-|-)'
+disjunctionOf :: [BoolForm] -> BoolForm
+disjunctionOf (x:l) = foldr (-|-) x l
+
 (-&&-) a@(Lit _) b@(Lit _) = Cnf [Cls [a], Cls [b]]
 (-&&-) c@(Cls _) l@(Lit _) = Cnf [c, Cls [l]]
 (-&&-) a@(Cls _) b@(Cls _) = Cnf [a, b]
 (-&&-) (Cnf cnf) l@(Lit _) = Cnf $ Cls [l]: cnf
 (-&&-) (Cnf cnf) c@(Cls _) = Cnf $ c : cnf
+(-&&-) cnf@(Cnf _) (Cnf cs) = foldr (\c cnf -> cnf -&&- c) cnf cs
 (-&&-) a b = b -&&- a
+
+-- | merge [BoolForm] by '(-&-)'
+conjunctionOf :: [BoolForm] -> BoolForm
+conjunctionOf (x:l) = foldr (-&-) x l
 
 negBF (Lit n) = Lit $ negate n
 negBF (Cls ls) = Cnf [Cls [(negBF l)] | l <- ls]
