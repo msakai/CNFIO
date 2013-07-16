@@ -2,7 +2,7 @@
 -- see http://haskell.org/cabal/users-guide/
 
 name:                CNFIO
-version:             0.1.8.2
+version:             0.1.8.3
 synopsis:            CNF Input/Output module
 description:
 
