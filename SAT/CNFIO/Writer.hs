@@ -31,5 +31,5 @@ toCNFString l = hdr ++ str
   where
     hdr = "p cnf " ++ show numV ++ " " ++ show numC ++ "\n"
     numC = length l
-    numV = length $ nub $ sort $ map abs $ concat l
+    numV = last o$ nub $ sort $ map abs $ concat l
     str = concat [intercalate " " (map show c) ++ " 0\n" | c <- l]
