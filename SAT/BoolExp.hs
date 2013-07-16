@@ -24,7 +24,8 @@ module SAT.BoolExp
        , asLatex
        )
        where
-import Data.List (intercalate)
+import Data.List (intercalate, sortBy, sort)
+import Data.Ord (comparing)
 
 class BoolComponent a where
   -- | lift to BoolForm
@@ -102,7 +103,7 @@ data BoolForm =
   Lit Int                       -- ^ a literal in BoolForm
   | Cls [BoolForm]              -- ^ a clause in BoolForm
   | Cnf [BoolForm]              -- ^ well-structured BoolForm
-    deriving (Eq, Show)
+    deriving (Eq, Show, Ord)
       
 instance BoolComponent BoolForm where
   toBF = id
@@ -142,7 +143,7 @@ negBF cnf@(Cnf _) = Cnf [Cls (map (Lit . negate) l) | l <- combinationOf lits]
 asList :: BoolForm -> [[Int]]
 asList a@(Lit i) = [[i]]
 asList c@(Cls _) = [asClauseList c]
-asList (Cnf cnf) = [asClauseList c | c <- cnf]
+asList (Cnf cnf) = sort [sortBy (comparing abs) $ asClauseList c | c <- cnf]
 
 -- | converts "Clause" to "[[Int]]"
 asClauseList :: BoolForm -> [Int]
