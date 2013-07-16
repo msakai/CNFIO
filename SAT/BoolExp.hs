@@ -64,6 +64,9 @@ a -&- b = toBF a -&&- toBF b
 neg :: (BoolComponent a) => a -> BoolForm
 neg a = negBF $ toBF a
 
+instance BoolComponent Int where
+  toBF a = Lit a
+
 instance BoolComponent [Char] where
   toBF a = Lit (read a::Int)
 
