@@ -31,6 +31,40 @@ class BoolComponent a where
   -- | lift to BoolForm
   toBF :: a -> BoolForm
 
+-- | BoolForm型
+data BoolForm =
+  Lit Int                       -- ^ a literal in BoolForm
+  | Cls [BoolForm]              -- ^ a clause in BoolForm
+  | Cnf [BoolForm]              -- ^ well-structured BoolForm
+    deriving (Eq, Show)
+
+instance Ord BoolForm where
+  compare (Lit a) (Lit b) = comparing abs a b
+  compare (Cls a) (Cls b) = compareAbsList (map unLit a) (map unLit b)
+  compare (Cnf a) (Cnf b) = compare a b
+
+unLit (Lit n) = n
+unLit _ = error "tried to get Int value from un-Lit"
+
+compareAbsList :: [Int] -> [Int] -> Ordering
+compareAbsList [] [] = EQ
+compareAbsList [] _ = LT
+compareAbsList _ [] = GT
+compareAbsList (a:l1) (b:l2)
+  | val == EQ = compareAbsList l1 l2
+  | otherwise = val
+  where
+    val = comparing abs a b
+
+canonize :: BoolForm -> BoolForm
+canonize l@(Lit _) = l
+canonize (Cls ls) = Cls . nub $ sort ls
+canonize (Cnf cs) = Cnf . filter toto . nub . sort $ map canonize cs
+  where
+    toto (Cls xs) = not $ any (\x -> elem (negate x) l) l
+      where
+        l = map unLit xs
+
 -- | disjunction constructor
 --
 -- >>> let c1 = "3" -|- "4"
@@ -41,26 +75,26 @@ class BoolComponent a where
 -- [[3,4]]
 --  
 -- >>> asList (c1 -|- Lit (-1))
--- [[3,4,-1]]
+-- [[-1,3,4]]
 --  
 -- >>> let c1 = "1" -&- "2"
 -- >>> let c2 = "3" -&- "4"
 -- >>> asList $ c1 -|- c2
--- [[1,3],[2,3],[1,4],[2,4]]
+-- [[1,3],[1,4],[2,3],[2,4]]
 --  
 (-|-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
-a -|- b = toBF a -||- toBF b
+a -|- b = canonize $ toBF a -||- toBF b
 
 -- | conjunction constructor
 --
 -- >>> asList $ "3" -&- "-2"
--- [[3],[-2]]
+-- [[-2],[3]]
 --
 -- >>> asList $ "3" -|- ("1" -&- "2")
 -- [[1,3],[2,3]]
 --
 (-&-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
-a -&- b = toBF a -&&- toBF b
+a -&- b = canonize $ toBF a -&&- toBF b
 
 -- | negate a form
 -- 
@@ -73,10 +107,10 @@ a -&- b = toBF a -&&- toBF b
 -- [[1,2],[2,3],[3,4]]
 --
 -- >>> asList $ neg cnf
--- [[-1,-2,-3],[-1,-2,-4],[-1,-3,-3],[-1,-3,-4],[-2,-2,-3],[-2,-2,-4],[-2,-3,-3],[-2,-3,-4]]
+-- [[-1,-2,-3],[-1,-2,-4],[-1,-3],[-1,-3,-4],[-2,-3],[-2,-3,-4],[-2,-4]]
 --
 neg :: (BoolComponent a) => a -> BoolForm
-neg a = negBF $ toBF a
+neg a = canonize $ negBF $ toBF a
 
 (-!-) :: (BoolComponent a) => a -> BoolForm
 (-!-) = neg
@@ -90,32 +124,29 @@ neg a = negBF $ toBF a
 -- [[-1,-2,3,4]]
 --
 (->-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
-a ->- b = neg (toBF a) -|- toBF b
+a ->- b = canonize $ neg (toBF a) -|- toBF b
 
 instance BoolComponent Int where
   toBF a = Lit a
 
 instance BoolComponent [Char] where
   toBF a = Lit (read a::Int)
-
--- | BoolForm型
-data BoolForm =
-  Lit Int                       -- ^ a literal in BoolForm
-  | Cls [BoolForm]              -- ^ a clause in BoolForm
-  | Cnf [BoolForm]              -- ^ well-structured BoolForm
-    deriving (Eq, Show, Ord)
       
 instance BoolComponent BoolForm where
   toBF = id
 
-(-||-) l1@(Lit a) l2@(Lit b) = Cls [l1, l2]
-(-||-) (Cls ls) lit@(Lit l) = Cls $ ls ++ [lit]
-(-||-) (Cls as) (Cls bs) = Cls $ as ++ bs
+(-||-) l1@(Lit a) l2@(Lit b) = Cls $ sortLit [l1, l2]
+(-||-) (Cls ls) lit@(Lit l) = Cls . sortLit $ ls ++ [lit]
+(-||-) (Cls as) (Cls bs) = Cls . sortLit $ as ++ bs
 (-||-) (Cnf cnf) l@(Lit _) = Cnf [ c -||- l | c <- cnf]
 (-||-) (Cnf cnf) c@(Cls _) = Cnf [ c' -||- c | c' <- cnf]
-(-||-) cnf@(Cnf _) (Cnf cs) = foldr (-&-) x l
-  where (x:l) = [cnf -||- c | c <- cs]
+(-||-) cnf@(Cnf _) (Cnf cs) = foldr (-&-) x $ l
+  where
+    (x:l) = [cnf -||- c | c <- cs]
 (-||-) a b = b -||- a
+
+sortLit :: [BoolForm]  -> [BoolForm]
+sortLit = sortBy (comparing (abs . unLit))
 
 -- | merge [BoolForm] by '(-|-)'
 disjunctionOf :: [BoolForm] -> BoolForm
@@ -135,7 +166,7 @@ conjunctionOf (x:l) = foldr (-&-) x l
 
 negBF (Lit n) = Lit $ negate n
 negBF (Cls ls) = Cnf [Cls [(negBF l)] | l <- ls]
-negBF cnf@(Cnf _) = Cnf [Cls (map (Lit . negate) l) | l <- combinationOf lits]
+negBF cnf@(Cnf _) = Cnf [Cls $ map (Lit . negate) l | l <- combinationOf lits]
   where
     lits = asList cnf
 
@@ -143,9 +174,9 @@ negBF cnf@(Cnf _) = Cnf [Cls (map (Lit . negate) l) | l <- combinationOf lits]
 asList :: BoolForm -> [[Int]]
 asList a@(Lit i) = [[i]]
 asList c@(Cls _) = [asClauseList c]
-asList (Cnf cnf) = nub $ sort $ filter toto [nub . sortBy (comparing abs) $ asClauseList c | c <- cnf]
+asList cnf@(Cnf _) = [asClauseList c | c <- cnf']
   where
-    toto l = not $ any (\x -> elem (negate x) l) l
+    (Cnf cnf') = canonize cnf
 
 -- | converts "Clause" to "[[Int]]"
 asClauseList :: BoolForm -> [Int]
