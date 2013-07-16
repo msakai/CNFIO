@@ -42,6 +42,11 @@ class BoolComponent a where
 -- >>> asList (c1 -|- Lit (-1))
 -- [[3,4,-1]]
 --  
+-- >>> let c1 = "1" -&- "2"
+-- >>> let c2 = "3" -&- "4"
+-- >>> asList $ c1 -|- c2
+-- [[1,3],[2,3],[1,4],[2,4]]
+--  
 (-|-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
 a -|- b = toBF a -||- toBF b
 
@@ -78,7 +83,7 @@ neg a = negBF $ toBF a
 -- | implication
 --
 -- >>> asList ("1" ->- "2")
--- -[[1,-2]]
+-- [[-1,2]]
 --
 -- >>> asList $ ("1" -&- "2") ->- ("3" -|- "4")
 -- [[-1,-2,3,4]]
