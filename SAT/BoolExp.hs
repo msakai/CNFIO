@@ -112,7 +112,8 @@ instance BoolComponent BoolForm where
 (-||-) (Cls as) (Cls bs) = Cls $ as ++ bs
 (-||-) (Cnf cnf) l@(Lit _) = Cnf [ c -||- l | c <- cnf]
 (-||-) (Cnf cnf) c@(Cls _) = Cnf [ c' -||- c | c' <- cnf]
-(-||-) cnf@(Cnf _) (Cnf cs) = foldr (\c cnf -> cnf -||- c) cnf cs
+(-||-) cnf@(Cnf _) (Cnf cs) = foldr (-&-) x l
+  where (x:l) = [cnf -||- c | c <- cs]
 (-||-) a b = b -||- a
 
 -- | merge [BoolForm] by '(-|-)'
