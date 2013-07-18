@@ -24,7 +24,7 @@ module SAT.BoolExp
        , asLatex
        )
        where
-import Data.List (intercalate, sortBy, sort, nub)
+import Data.List (foldl', intercalate, sortBy, sort, nub)
 import Data.Ord (comparing)
 
 class BoolComponent a where
@@ -94,7 +94,7 @@ a -|- b = canonize $ toBF a -||- toBF b
 -- [[1,3],[2,3]]
 --
 (-&-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
-a -&- b = canonize $ toBF a -&&- toBF b
+a -&- b =toBF a -&&- toBF b
 
 -- | negate a form
 -- 
@@ -140,7 +140,7 @@ instance BoolComponent BoolForm where
 (-||-) (Cls as) (Cls bs) = Cls . sortLit $ as ++ bs
 (-||-) (Cnf cnf) l@(Lit _) = Cnf [ c -||- l | c <- cnf]
 (-||-) (Cnf cnf) c@(Cls _) = Cnf [ c' -||- c | c' <- cnf]
-(-||-) cnf@(Cnf _) (Cnf cs) = foldr (-&-) x $ l
+(-||-) cnf@(Cnf _) (Cnf cs) = foldl' (-&-) x $ l
   where
     (x:l) = [cnf -||- c | c <- cs]
 (-||-) a b = b -||- a
@@ -150,14 +150,14 @@ sortLit = sortBy (comparing (abs . unLit))
 
 -- | merge [BoolForm] by '(-|-)'
 disjunctionOf :: [BoolForm] -> BoolForm
-disjunctionOf (x:l) = foldr (-|-) x l
+disjunctionOf (x:l) = foldl' (-|-) x l
 
 (-&&-) a@(Lit _) b@(Lit _) = Cnf [Cls [a], Cls [b]]
 (-&&-) c@(Cls _) l@(Lit _) = Cnf [c, Cls [l]]
 (-&&-) a@(Cls _) b@(Cls _) = Cnf [a, b]
 (-&&-) (Cnf cnf) l@(Lit _) = Cnf $ Cls [l]: cnf
 (-&&-) (Cnf cnf) c@(Cls _) = Cnf $ c : cnf
-(-&&-) cnf@(Cnf _) (Cnf cs) = foldr (\c cnf -> cnf -&&- c) cnf cs
+(-&&-) cnf@(Cnf _) (Cnf cs) = foldl' (\c cnf -> cnf -&&- c) cnf cs
 (-&&-) a b = b -&&- a
 
 -- | merge [BoolForm] by '(-&-)'
