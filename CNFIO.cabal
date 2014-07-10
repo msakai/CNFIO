@@ -2,7 +2,7 @@
 -- see http://haskell.org/cabal/users-guide/
 
 name:                CNFIO
-version:             0.1.8.5
+version:             0.1.8.6
 synopsis:            CNF Input/Output module
 description:
 
@@ -28,4 +28,4 @@ library
   default-language:	  Haskell2010
   exposed-modules:     SAT.CNFIO, SAT.CNFIO.Reader, SAT.CNFIO.Writer, SAT.CNFIO.MinisatReader
                SAT.BoolExp
-  build-depends:       base ==4.6.*
+  build-depends:       base == 4.7.*
