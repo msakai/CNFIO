@@ -135,6 +135,13 @@ instance BoolComponent [Char] where
 instance BoolComponent BoolForm where
   toBF = id
 
+{-
+-- This causes 'Constraint is no smaller than the instance head'
+-- So if you want to use your Enum in forms, you declase it as 'BoolComponent'
+instance (Enum e) => BoolComponent e where
+  toBF = Lit . fromEnum
+-}
+
 (-||-) l1@(Lit a) l2@(Lit b) = Cls $ sortLit [l1, l2]
 (-||-) (Cls ls) lit@(Lit l) = Cls . sortLit $ ls ++ [lit]
 (-||-) (Cls as) (Cls bs) = Cls . sortLit $ as ++ bs
