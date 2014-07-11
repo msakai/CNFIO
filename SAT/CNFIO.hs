@@ -12,9 +12,13 @@ module SAT.CNFIO
        , toFile
        , toCNFString
          -- * Bool Operation
+       , BoolComponent (..)
+       , BoolForm (..)
        , neg
+       , (-!-)
        , (-|-)
        , (-&-)
+       , (->-)
        , asList
        , asLatex
        )
