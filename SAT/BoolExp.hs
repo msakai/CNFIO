@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE BangPatterns, FlexibleInstances #-}
 -- | Boolean Expression module to build CNF from arbitrary expressions
 --
 -- TODO: 
