@@ -30,6 +30,8 @@ import Data.Ord (comparing)
 class BoolComponent a where
   -- | lift to BoolForm
   toBF :: a -> BoolForm
+  fromBF :: BoolForm -> a
+  fromBF = undefined
 
 -- | BoolForm型
 data BoolForm =
@@ -179,9 +181,9 @@ negBF cnf@(Cnf _) = Cnf [Cls $ map (Lit . negate) l | l <- combinationOf lits]
 
 -- | converts a BoolForm to "[[Int]]"
 asList :: BoolForm -> [[Int]]
-asList a@(Lit i) = [[i]]
-asList c@(Cls _) = [asClauseList c]
-asList cnf@(Cnf _) = [asClauseList c | c <- cnf']
+asList !a@(Lit i) = [[i]]
+asList !c@(Cls _) = [asClauseList c]
+asList !cnf@(Cnf _) = [asClauseList c | c <- cnf']
   where
     (Cnf cnf') = canonize cnf
 
