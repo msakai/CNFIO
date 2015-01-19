@@ -28,4 +28,4 @@ library
   default-language:	  Haskell2010
   exposed-modules:     SAT.CNFIO, SAT.CNFIO.Reader, SAT.CNFIO.Writer, SAT.CNFIO.MinisatReader
                SAT.BoolExp
-  build-depends:       base == 4.7.*
+  build-depends:       base == 4.*
