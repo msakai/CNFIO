@@ -1,5 +1,6 @@
 {-# LANGUAGE BangPatterns, FlexibleInstances, ViewPatterns, UndecidableInstances #-}
 -- | Boolean Expression module to build CNF from arbitrary expressions
+-- Tseitin translation: http://en.wikipedia.org/wiki/Tseitin_transformation
 module SAT.BoolExp 
        ( 
          -- * Class & Type
@@ -33,13 +34,10 @@ tseitinBase = 800000
 class BoolComponent a where
   -- | lift to BoolForm
   toBF :: a -> BoolForm
-  fromBF :: BoolForm -> a
-  fromBF = undefined
 
 -- | BoolForm型
-data BoolForm = Cnf (Int, Int) [[Int]] -- ^ well-structured BoolForm
+data BoolForm = Cnf (Int, Int) [[Int]]
     deriving (Eq, Show)
-
 
 isLiteral :: BoolForm -> Maybe Int
 isLiteral (Cnf _ [[x]]) = Just x
@@ -64,23 +62,10 @@ renumber base (Cnf (m, n) l) = Cnf (m, if x < tseitinBase then 0 else x) l'
     x = maximum $ map maximum l'
     l' = map (map f) l
     offset = base - tseitinBase - 1
-    f :: Int -> Int
-    f x
-      | abs x < tseitinBase = x
-      | otherwise = signum x * (abs x + offset)
+    f x = if abs x < tseitinBase then x else signum x * (abs x + offset)
 
 instance Ord BoolForm where
   compare (Cnf _ a) (Cnf _ b) = compare a b
-
-compareAbsList :: [Int] -> [Int] -> Ordering
-compareAbsList [] [] = EQ
-compareAbsList [] _ = LT
-compareAbsList _ [] = GT
-compareAbsList (a:l1) (b:l2)
-  | val == EQ = compareAbsList l1 l2
-  | otherwise = val
-  where
-    val = comparing abs a b
 
 -- | disjunction constructor
 --
@@ -90,12 +75,6 @@ compareAbsList (a:l1) (b:l2)
 --  
 -- >>> asList (c1 -|- "-1")
 -- [[3,4,-5],[-3,5],[-4,5],[5,-1,-6],[-5,6],[1,6]]
---  
--- >>> let c1 = "1" -&- "2"
--- >>> let c2 = "3" -&- "4"
--- >>> asList $ c1 -|- c2
--- [[1,3],[1,4],[2,3],[2,4]]
---  
 (-|-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
 (toBF -> a) -|- (toBF -> b) = a -||- b
 
@@ -112,17 +91,8 @@ a -&- b =toBF a -&&- toBF b
 
 -- | negate a form
 -- 
--- >>> let (c1, c2, c3) = ("1" -|- "2", "2" -|- "3", "3" -|- "4" )
--- >>> asList $ neg c1
+-- >>> asList $ neg ("1" -|- "2", "2" -|- "3", "3" -|- "4" )
 -- [[1,2,-3],[-1,3],[-2,3],[-3,-4],[3,4]]
---
--- >>> let cnf = c1 -&- (c2 -&- c3)
--- >>> asList cnf
--- [[1,2,-5],[-1,5],[-2,5],[2,3,-6],[-2,6],[-3,6],[3,4,-7],[-3,7],[-4,7],[-6,-7,8],[6,-8],[7,-8],[-5,-8,9],[5,-9],[8,-9]]
---
--- >>> asList $ neg cnf
--- [[1,2,-5],[-1,5],[-2,5],[2,3,-6],[-2,6],[-3,6],[3,4,-7],[-3,7],[-4,7],[-6,-7,8],[6,-8],[7,-8],[-5,-8,9],[5,-9],[8,-9],[-9,-10],[9,10]]
---
 neg :: (BoolComponent a) => a -> BoolForm
 neg (toBF -> a) = negBF a
 
@@ -133,10 +103,6 @@ neg (toBF -> a) = negBF a
 --
 -- >>> asList ("1" ->- "2")
 -- [[-1,-3],[1,3],[3,2,-4],[-3,4],[-2,4]]
---
--- >>> asList $ ("1" -&- "2") ->- ("3" -|- "4")
--- [[-1,-2,5],[1,-5],[2,-5],[-5,-6],[5,6],[3,4,-7],[-3,7],[-4,7],[6,7,-8],[-6,8],[-7,8]]
---
 (->-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
 a ->- b = neg (toBF a) -|- toBF b
 
@@ -150,11 +116,6 @@ instance BoolComponent [Char] where
 
 instance BoolComponent BoolForm where
   toBF = id
-
--- This causes 'Constraint is no smaller than the instance head'
--- So if you want to use your Enum in forms, you declase it as 'BoolComponent'
--- instance (Enum e) => BoolComponent e where
---  toBF = Lit . fromEnum
 
 --------------------------------------------------------------------------------
 -- internal functions
@@ -201,19 +162,6 @@ asList :: BoolForm -> [[Int]]
 asList cnf@(Cnf (m,n) _) = l'
   where
     Cnf _ l' = renumber (m + 1) cnf
-
--- | bulid all combination of [Int]
---
--- >>> combinationOf [[1,2], [1,2]]
--- [[1,1],[1,2],[2,1],[2,2]]
---
--- >>> combinationOf [[1], [3,4], [5,6,7]]
--- [[1,3,5],[1,3,6],[1,3,7],[1,4,5],[1,4,6],[1,4,7]]
---
-combinationOf :: [[Int]] -> [[Int]]
-combinationOf [] = [] 
-combinationOf [x] = [[a] | a <-x]
-combinationOf (x:l) = concat [map (a :) l' | a <- x, let l' = combinationOf l]
 
 -- | make latex string from CNF
 --
