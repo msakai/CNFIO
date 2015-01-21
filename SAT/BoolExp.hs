@@ -6,9 +6,6 @@ module SAT.BoolExp
          -- * Class & Type
          BoolComponent (..)
        , BoolForm (..)
-       , renumber
-       , tseitinNumber
-       , maxRank
          -- * Expression contructors
        , (-|-)
        , (-&-)
