@@ -124,7 +124,7 @@ neg (toBF -> e) =
 -- >>> asList ("1" ->- "2")
 -- [[-1,-3],[1,3],[3,2,-4],[-3,4],[-2,4]]
 (->-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
-(toBf -> a) ->- (toBf -> b) = (neg a) -|- b
+(toBF -> a) ->- (toBF -> b) = (neg a) -|- b
 
 -- | merge [BoolForm] by '(-|-)'
 disjunctionOf :: [BoolForm] -> BoolForm
@@ -133,7 +133,7 @@ disjunctionOf (x:l) = foldl' (-|-) x l
 
 -- | merge [BoolForm] by '(-&-)'
 conjunctionOf :: [BoolForm] -> BoolForm
-disjunctionOf [] = Cnf (0, tseitinBase) [[]]
+conjunctionOf [] = Cnf (0, tseitinBase) [[]]
 conjunctionOf (x:l) = foldl' (-&-) x l
 
 -- | converts a BoolForm to "[[Int]]"
