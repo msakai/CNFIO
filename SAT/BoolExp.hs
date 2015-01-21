@@ -50,7 +50,7 @@ maxRank :: BoolForm -> Int
 maxRank (Cnf (n, _) _) = n
 
 tseitinNumber :: BoolForm -> Int
-tseitinNumber (Cnf (m, n) [[x]]) = max m n
+tseitinNumber (Cnf (m, n) [[x]]) = x
 tseitinNumber (Cnf (_, n) _) = n
 
 renumber :: Int -> BoolForm -> (BoolForm, Int)
@@ -66,20 +66,20 @@ instance Ord BoolForm where
 
 -- | disjunction constructor
 --
--- >>> let c1 = "3" -|- "4"
--- >>> asList c1
+-- >>> asList $ "3" -|- "4"
 -- [[3,4,-5],[-3,5],[-4,5]]
 --  
--- >>> asList (c1 -|- "-1")
+-- >>> asList (("3" -|- "4") -|- "-1")
 -- [[3,4,-5],[-3,5],[-4,5],[5,-1,-6],[-5,6],[1,6]]
+--
 (-|-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
 (toBF -> e1) -|- (toBF -> e2') = 
   Cnf (m, c) $ clausesOf e1 ++ clausesOf e2 ++ [[a, b, - c], [- a, c], [- b, c]]
   where
     a = tseitinNumber e1
-    (e2, b) = renumber (1 + a) e2'
+    (e2, b) = renumber (1 + max tseitinBase a) e2'
     m = max (maxRank e1) (maxRank e2)
-    c = 1 + max a b
+    c = 1 + max tseitinBase (max a b)
 
 -- | conjunction constructor
 --
@@ -87,16 +87,16 @@ instance Ord BoolForm where
 -- [[-3,2,4],[3,-4],[-2,-4]]
 --
 -- >>> asList $ "3" -|- ("1" -&- "2")
--- [[-3,0,4],[3,-4],[0,-4],[3,4,-5],[-3,5],[-4,5]]
+-- [[-1,-2,4],[1,-4],[2,-4],[3,4,-5],[-3,5],[-4,5]]
 --
 (-&-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
 (toBF -> e1) -&- (toBF -> e2') =
   Cnf (m, c) $ clausesOf e1 ++ clausesOf e2 ++ [[- a, - b, c], [a, - c], [b, - c]]
   where
     a = tseitinNumber e1
-    (e2, b) = renumber (1 + a) e2'
+    (e2, b) = renumber (1 + max tseitinBase a) e2'
     m = max (maxRank e1) (maxRank e2)
-    c = 1 + max a b
+    c = 1 + max tseitinBase (max a b)
 
 -- | negate a form
 -- 
@@ -108,7 +108,7 @@ neg (toBF -> e) =
   where
     a = tseitinNumber e
     m = maxRank e
-    c = 1 + a
+    c = 1 + max tseitinBase a
 
 (-!-) :: (BoolComponent a) => a -> BoolForm
 (-!-) = neg
