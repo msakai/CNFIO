@@ -26,6 +26,8 @@ import Data.List (foldl', intercalate)
 tseitinBase :: Int
 tseitinBase = 800000
 
+data L = L Int
+
 class BoolComponent a where
   toBF :: a -> BoolForm   -- lift to BoolForm
 
@@ -34,6 +36,9 @@ data BoolForm = Cnf (Int, Int) [[Int]]
 
 instance BoolComponent Int where
   toBF a = Cnf (abs a, max tseitinBase (abs a)) [[a]]
+
+instance BoolComponent L where
+  toBF (L a) = Cnf (abs a, max tseitinBase (abs a)) [[a]]
 
 instance BoolComponent [Char] where
   toBF (read -> a) = Cnf (abs a, max tseitinBase (abs a)) [[a]]
