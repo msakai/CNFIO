@@ -49,11 +49,11 @@ clausesOf cnf@(Cnf _ l) = l
 maxRank :: BoolForm -> Int
 maxRank (Cnf (n, _) _) = n
 
--- | 部分式の出力を表す変数を返す。
+-- | この部分式の出力を表す変数を返す。
 -- ただし単一リテラルの場合はその値を返す。
 -- 単一リテラルの場合は負数を返す場合がある。
 -- それ以外の場合は 'tseitinBase' よりも大きな正数である。
--- 従って`max tseitinBase 返値`は常にこの式に含まれない次の一時変数を示す。
+-- 従って`1+ max tseitinBase 返値`は常にこの式に含まれない次の一時変数を示す。
 tseitinNumber :: BoolForm -> Int
 tseitinNumber (Cnf (m, n) [[x]]) = x
 tseitinNumber (Cnf (_, n) _) = n
