@@ -24,9 +24,7 @@ module SAT.BoolExp
        )
        where
 
-import Control.Applicative
-import Data.List (foldl', intercalate, sortBy, sort, nub)
-import Data.Ord (comparing)
+import Data.List (foldl', intercalate)
 
 tseitinBase :: Int
 tseitinBase = 800000
@@ -38,18 +36,16 @@ data BoolForm = Cnf (Int, Int) [[Int]]
     deriving (Eq, Show)
 
 instance BoolComponent Int where
-  toBF a = Cnf (a, tseitinBase) [[a]]
+  toBF a = Cnf (abs a, max tseitinBase (abs a)) [[a]]
 
 instance BoolComponent [Char] where
-  toBF a = Cnf (v, tseitinBase) [[v]]
-    where
-      v = (read a)::Int
+  toBF (read -> a) = Cnf (abs a, max tseitinBase (abs a)) [[a]]
 
 instance BoolComponent BoolForm where
   toBF = id
 
 -- | return a 'clause' list only if it contains some real clause (not a literal) 
-clausesOf :: BoolForm -> [Int]
+clausesOf :: BoolForm -> [[Int]]
 clausesOf cnf@(Cnf _ [[x]]) = []
 clausesOf cnf@(Cnf _ l) = l
 
@@ -57,15 +53,14 @@ maxRank :: BoolForm -> Int
 maxRank (Cnf (n, _) _) = n
 
 tseitinNumber :: BoolForm -> Int
-tseitinNumber (Cnf (m, n) _)
-  | tseitinBase < n = n
-  | otherwise = m
+tseitinNumber (Cnf (m, n) [[x]]) = max m n
+tseitinNumber (Cnf (_, n) _) = n
 
-renumber :: Int -> BoolForm -> BoolForm
-renumber base (Cnf (m, n) l) = Cnf (m, if x < tseitinBase then 0 else x) l'
+renumber :: Int -> BoolForm -> (BoolForm, Int)
+renumber base (Cnf (m, n) l) = (Cnf (m, n') l', n')
   where
-    x = maximum $ map maximum l'
     l' = map (map f) l
+    n' = maximum $ map maximum l'
     offset = base - tseitinBase - 1
     f x = if abs x < tseitinBase then x else signum x * (abs x + offset)
 
@@ -81,7 +76,13 @@ instance Ord BoolForm where
 -- >>> asList (c1 -|- "-1")
 -- [[3,4,-5],[-3,5],[-4,5],[5,-1,-6],[-5,6],[1,6]]
 (-|-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
-(toBF -> a) -|- (toBF -> b) = a -||- b
+(toBF -> e1) -|- (toBF -> e2') = 
+  Cnf (m, c) $ clausesOf e1 ++ clausesOf e2 ++ [[a, b, - c], [- a, c], [- b, c]]
+  where
+    a = tseitinNumber e1
+    (e2, b) = renumber (1 + a) e2'
+    m = max (maxRank e1) (maxRank e2)
+    c = 1 + max a b
 
 -- | conjunction constructor
 --
@@ -89,17 +90,28 @@ instance Ord BoolForm where
 -- [[-3,2,4],[3,-4],[-2,-4]]
 --
 -- >>> asList $ "3" -|- ("1" -&- "2")
--- [[-1,-2,4],[1,-4],[2,-4],[3,2,-4],[-3,4],[-2,4]]
+-- [[-3,0,4],[3,-4],[0,-4],[3,4,-5],[-3,5],[-4,5]]
 --
 (-&-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
-a -&- b =toBF a -&&- toBF b
+(toBF -> e1) -&- (toBF -> e2') =
+  Cnf (m, c) $ clausesOf e1 ++ clausesOf e2 ++ [[- a, - b, c], [a, - c], [b, - c]]
+  where
+    a = tseitinNumber e1
+    (e2, b) = renumber (1 + a) e2'
+    m = max (maxRank e1) (maxRank e2)
+    c = 1 + max a b
 
 -- | negate a form
 -- 
--- >>> asList $ neg ("1" -|- "2", "2" -|- "3", "3" -|- "4" )
+-- >>> asList $ neg ("1" -|- "2")
 -- [[1,2,-3],[-1,3],[-2,3],[-3,-4],[3,4]]
 neg :: (BoolComponent a) => a -> BoolForm
-neg (toBF -> a) = negBF a
+neg (toBF -> e) =
+  Cnf (m, c) $ clausesOf e ++ [[- a, - c], [a, c]]
+  where
+    a = tseitinNumber e
+    m = maxRank e
+    c = 1 + a
 
 (-!-) :: (BoolComponent a) => a -> BoolForm
 (-!-) = neg
@@ -110,37 +122,6 @@ neg (toBF -> a) = negBF a
 -- [[-1,-3],[1,3],[3,2,-4],[-3,4],[-2,4]]
 (->-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
 a ->- b = neg (toBF a) -|- toBF b
---------------------------------------------------------------------------------
--- internal functions
---------------------------------------------------------------------------------
-
-(-||-) :: BoolForm -> BoolForm -> BoolForm
-(-||-) e1 e2' =
-  Cnf (m, c) $ clausesOf e1 ++ clausesOf e2 ++ [[a, b, - c], [- a, c], [- b, c]]
-  where
-    a = tseitinNumber e1
-    e2 = renumber (a + 1) e2'
-    b = tseitinNumber e2
-    m = max (maxRank e1) (maxRank e2)
-    c = 1 + maximum [tseitinBase, a, b]
-
-(-&&-) :: BoolForm -> BoolForm -> BoolForm
-(-&&-) e1 e2' =
-  Cnf (m, c) $ clausesOf e1 ++ clausesOf e2 ++ [[- a, - b, c], [a, - c], [b, - c]]
-  where
-    a = tseitinNumber e1
-    e2 = renumber (a + 1) e2'
-    b = tseitinNumber e2
-    m = max (maxRank e1) (maxRank e2)
-    c = 1 + maximum [tseitinBase, a, b]
-
-negBF :: BoolForm -> BoolForm
-negBF e =
-  Cnf (m, c) $ clausesOf e ++ [[- a, - c], [a, c]]
-  where
-    a = tseitinNumber e
-    m = maxRank e
-    c = 1 + maximum [tseitinBase, a]
 
 -- | merge [BoolForm] by '(-|-)'
 disjunctionOf :: [BoolForm] -> BoolForm
@@ -148,13 +129,13 @@ disjunctionOf (x:l) = foldl' (-|-) x l
 
 -- | merge [BoolForm] by '(-&-)'
 conjunctionOf :: [BoolForm] -> BoolForm
-conjunctionOf (x:l) = foldr (-&-) x l
+conjunctionOf (x:l) = foldl' (-&-) x l
 
 -- | converts a BoolForm to "[[Int]]"
 asList :: BoolForm -> [[Int]]
 asList cnf@(Cnf (m,n) _) = l'
   where
-    Cnf _ l' = renumber (m + 1) cnf
+    (Cnf _ l', _) = renumber (m + 1) cnf
 
 -- | make latex string from CNF
 --
@@ -171,4 +152,3 @@ asLatex b = beg ++ s ++ end
     makeLiteral l
       | 0 < l = " x_{" ++ show l ++ "} "
       | otherwise = " \\neg " ++ "x_{" ++ show (negate l) ++ "} "
-
