@@ -43,6 +43,7 @@ instance BoolComponent BoolForm where
 
 -- | return a 'clause' list only if it contains some real clause (not a literal) 
 clausesOf :: BoolForm -> [[Int]]
+clausesOf cnf@(Cnf _ [[]]) = []
 clausesOf cnf@(Cnf _ [[x]]) = []
 clausesOf cnf@(Cnf _ l) = l
 
@@ -123,19 +124,21 @@ neg (toBF -> e) =
 -- >>> asList ("1" ->- "2")
 -- [[-1,-3],[1,3],[3,2,-4],[-3,4],[-2,4]]
 (->-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
-a ->- b = neg (toBF a) -|- toBF b
+(toBf -> a) ->- (toBf -> b) = (neg a) -|- b
 
 -- | merge [BoolForm] by '(-|-)'
 disjunctionOf :: [BoolForm] -> BoolForm
+disjunctionOf [] = Cnf (0, tseitinBase) [[]]
 disjunctionOf (x:l) = foldl' (-|-) x l
 
 -- | merge [BoolForm] by '(-&-)'
 conjunctionOf :: [BoolForm] -> BoolForm
+disjunctionOf [] = Cnf (0, tseitinBase) [[]]
 conjunctionOf (x:l) = foldl' (-&-) x l
 
 -- | converts a BoolForm to "[[Int]]"
 asList :: BoolForm -> [[Int]]
-asList cnf@(Cnf (m,n) _) = l'
+asList cnf@(Cnf (m,_) _) = l'
   where
     (Cnf _ l', _) = renumber (m + 1) cnf
 
