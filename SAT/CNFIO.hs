@@ -21,6 +21,7 @@ module SAT.CNFIO
        , (->-)
        , asList
        , asLatex
+       , asCNFString
        )
        where
 import SAT.CNFIO.Reader
@@ -28,3 +29,6 @@ import SAT.CNFIO.Writer
 import SAT.CNFIO.MinisatReader
 import SAT.BoolExp
 
+
+asCNFString :: BoolForm -> String
+asCNFString = toCNFString . asList

@@ -2,11 +2,13 @@
 -- see http://haskell.org/cabal/users-guide/
 
 name:                CNFIO
-version:             0.1.9.2
+version:             0.2.0.0
 synopsis:            CNF Input/Output module
 description:
 
-  read/write DIMACS CNF file
+ a small library to manipulate propositional logic:
+  * convert any expression to CNF using with Tseitin transformation
+  * read/write DIMACS CNF file
   .
 
 license:             GPL-3
