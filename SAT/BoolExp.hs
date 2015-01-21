@@ -32,20 +32,26 @@ tseitinBase :: Int
 tseitinBase = 800000
 
 class BoolComponent a where
-  -- | lift to BoolForm
-  toBF :: a -> BoolForm
+  toBF :: a -> BoolForm   -- lift to BoolForm
 
--- | BoolForm型
 data BoolForm = Cnf (Int, Int) [[Int]]
     deriving (Eq, Show)
 
-isLiteral :: BoolForm -> Maybe Int
-isLiteral (Cnf _ [[x]]) = Just x
-isLiteral _ = Nothing
+instance BoolComponent Int where
+  toBF a = Cnf (a, tseitinBase) [[a]]
 
-clausesOf cnf@(Cnf _ l)
-  | Just x <- isLiteral cnf = []
-  | otherwise = l
+instance BoolComponent [Char] where
+  toBF a = Cnf (v, tseitinBase) [[v]]
+    where
+      v = (read a)::Int
+
+instance BoolComponent BoolForm where
+  toBF = id
+
+-- | return a 'clause' list only if it contains some real clause (not a literal) 
+clausesOf :: BoolForm -> [Int]
+clausesOf cnf@(Cnf _ [[x]]) = []
+clausesOf cnf@(Cnf _ l) = l
 
 maxRank :: BoolForm -> Int
 maxRank (Cnf (n, _) _) = n
@@ -55,7 +61,6 @@ tseitinNumber (Cnf (m, n) _)
   | tseitinBase < n = n
   | otherwise = m
 
--- | renumbering
 renumber :: Int -> BoolForm -> BoolForm
 renumber base (Cnf (m, n) l) = Cnf (m, if x < tseitinBase then 0 else x) l'
   where
@@ -99,24 +104,12 @@ neg (toBF -> a) = negBF a
 (-!-) :: (BoolComponent a) => a -> BoolForm
 (-!-) = neg
 
--- | implication
+-- | implication as a short cut
 --
 -- >>> asList ("1" ->- "2")
 -- [[-1,-3],[1,3],[3,2,-4],[-3,4],[-2,4]]
 (->-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
 a ->- b = neg (toBF a) -|- toBF b
-
-instance BoolComponent Int where
-  toBF a = Cnf (a, tseitinBase) [[a]]
-
-instance BoolComponent [Char] where
-  toBF a = Cnf (v, tseitinBase) [[v]]
-    where
-      v = (read a)::Int
-
-instance BoolComponent BoolForm where
-  toBF = id
-
 --------------------------------------------------------------------------------
 -- internal functions
 --------------------------------------------------------------------------------
