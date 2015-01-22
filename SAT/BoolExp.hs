@@ -17,6 +17,7 @@ module SAT.BoolExp
        , conjunctionOf
          -- * Convert function
        , asList
+       , asList'
        , asLatex
        )
        where
@@ -65,7 +66,9 @@ tseitinNumber (Cnf (m, n) [[x]]) = x
 tseitinNumber (Cnf (_, n) _) = n
 
 renumber :: Int -> BoolForm -> (BoolForm, Int)
-renumber base (Cnf (m, n) l) = (Cnf (m, n') l', n')
+renumber base (Cnf (m, n) l)
+  | tseitinBase < base = (Cnf (m, n') l', n')
+  | otherwise = (Cnf (n', tseitinBase) l', n')
   where
     l' = map (map f) l
     n' = maximum $ map maximum l'
@@ -147,6 +150,14 @@ asList cnf@(Cnf (m,_) _) = l'
   where
     (Cnf _ l', _) = renumber (m + 1) cnf
 
+-- | converts a *satisfied* BoolForm to "[[Int]]"
+asList' :: BoolForm -> [[Int]]
+asList' cnf@(Cnf (m,n) l)
+  | n <= tseitinBase = l
+  | otherwise = [m'] : l' 
+  where
+    (Cnf (m', _) l', _) = renumber (m + 1) cnf
+
 -- | make latex string from CNF
 --
 -- >>> asLatex $ "3" -|- "4" 
@@ -158,6 +169,17 @@ asLatex b = beg ++ s ++ end
     beg = "\\begin{displaymath}\n"
     end = "\n\\end{displaymath}\n"
     s = intercalate " \\wedge " [ makeClause c | c <- asList b]
+    makeClause c = "(" ++ intercalate "\\vee" [makeLiteral l | l <- c] ++ ")"
+    makeLiteral l
+      | 0 < l = " x_{" ++ show l ++ "} "
+      | otherwise = " \\neg " ++ "x_{" ++ show (negate l) ++ "} "
+
+asLatex' :: BoolForm -> String
+asLatex' b = beg ++ s ++ end
+  where
+    beg = "\\begin{displaymath}\n"
+    end = "\n\\end{displaymath}\n"
+    s = intercalate " \\wedge " [ makeClause c | c <- asList' b]
     makeClause c = "(" ++ intercalate "\\vee" [makeLiteral l | l <- c] ++ ")"
     makeLiteral l
       | 0 < l = " x_{" ++ show l ++ "} "
