@@ -22,6 +22,7 @@ module SAT.CNFIO
        , asList
        , asLatex
        , asCNFString
+       , asCNFString'
        )
        where
 import SAT.CNFIO.Reader
@@ -32,3 +33,6 @@ import SAT.BoolExp
 
 asCNFString :: BoolForm -> String
 asCNFString = toCNFString . asList
+
+asCNFString :: BoolForm -> String
+asCNFString' = toCNFString . asList'
