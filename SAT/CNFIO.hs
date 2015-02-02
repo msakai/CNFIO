@@ -34,5 +34,5 @@ import SAT.BoolExp
 asCNFString :: BoolForm -> String
 asCNFString = toCNFString . asList
 
-asCNFString :: BoolForm -> String
+asCNFString' :: BoolForm -> String
 asCNFString' = toCNFString . asList'
