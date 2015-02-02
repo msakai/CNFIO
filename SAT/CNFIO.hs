@@ -19,6 +19,8 @@ module SAT.CNFIO
        , (-|-)
        , (-&-)
        , (->-)
+       , conjunctionOf
+       , disjunctionOf
        , asList
        , asLatex
        , asCNFString
@@ -29,7 +31,6 @@ import SAT.CNFIO.Reader
 import SAT.CNFIO.Writer
 import SAT.CNFIO.MinisatReader
 import SAT.BoolExp
-
 
 asCNFString :: BoolForm -> String
 asCNFString = toCNFString . asList
