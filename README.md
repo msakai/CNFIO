@@ -1,5 +1,5 @@
-CNFReader
+CNFIO (renamed from CNFReader)
 =========
 
  * Read/Write DIMACS CNF
- * Calculate basic Boolean Operations
+ * Build a CNF form from any fomula using *Tseyitin coding*

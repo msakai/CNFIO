@@ -19,6 +19,7 @@ module SAT.BoolExp
        , asList
        , asList'
        , asLatex
+       , asLatex'
        )
        where
 

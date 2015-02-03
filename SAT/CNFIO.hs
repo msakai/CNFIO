@@ -11,20 +11,10 @@ module SAT.CNFIO
          -- * Output
        , toFile
        , toCNFString
-         -- * Bool Operation
-       , BoolComponent (..)
-       , BoolForm (..)
-       , neg
-       , (-!-)
-       , (-|-)
-       , (-&-)
-       , (->-)
-       , conjunctionOf
-       , disjunctionOf
-       , asList
-       , asLatex
        , asCNFString
        , asCNFString'
+         -- * Bool Operation
+       , module SAT.BoolExp
        )
        where
 import SAT.CNFIO.Reader
@@ -32,8 +22,10 @@ import SAT.CNFIO.Writer
 import SAT.CNFIO.MinisatReader
 import SAT.BoolExp
 
+-- | String from BoolFrom
 asCNFString :: BoolForm -> String
 asCNFString = toCNFString . asList
 
+-- | String from BoolFrom
 asCNFString' :: BoolForm -> String
 asCNFString' = toCNFString . asList'
