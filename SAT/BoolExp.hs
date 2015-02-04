@@ -114,9 +114,6 @@ instance Ord BoolForm where
     m = max (maxRank e1) (maxRank e2)
     c = 1 + max tseitinBase (max a b)
 
-(-=-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
-(toBF -> e1) -=- (toBF -> e2) = (e1 -&- e2) -|- (neg e1 -&- neg e2)
-
 -- | negate a form
 -- 
 -- >>> asList $ neg ("1" -|- "2")
@@ -129,8 +126,11 @@ neg (toBF -> e) =
     m = maxRank e
     c = 1 + max tseitinBase a
 
-(-!-) :: (BoolComponent a) => a -> BoolForm
-(-!-) = neg
+(-=-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
+(toBF -> e1) -=- (toBF -> e2) = (e1 -&- e2) -|- (neg e1 -&- neg e2)
+
+(-!-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
+(toBF -> e1) -!- (toBF -> e2) = (neg e1 -&- e2) -|- (e1 -&- neg e2)
 
 -- | implication as a short cut
 --
