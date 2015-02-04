@@ -9,6 +9,7 @@ module SAT.BoolExp
          -- * Expression contructors
        , (-|-)
        , (-&-)
+       , (-=-)
        , (-!-)
        , (->-)
        , neg
@@ -112,6 +113,9 @@ instance Ord BoolForm where
     (e2, b) = renumber (1 + max tseitinBase a) e2'
     m = max (maxRank e1) (maxRank e2)
     c = 1 + max tseitinBase (max a b)
+
+(-=-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
+(toBF -> e1) -=- (toBF -> e2) = (e1 -&- e2) -|- (neg e1 -&- neg e2)
 
 -- | negate a form
 -- 
