@@ -51,6 +51,19 @@ instance BoolComponent [Char] where
 instance BoolComponent BoolForm where
   toBF = id
 
+boolFormTrue = Cnf (-1, 1) []
+boolFormFalse = Cnf (-1, -1) []
+
+instance BoolComponent Bool where
+  toBF True = boolFormTrue
+  toBF False = boolFormFalse
+
+isTrue :: BoolForm -> Bool
+isTrue = (== boolFormTrue)
+
+isFalse :: BoolForm -> Bool
+isFalse = (== boolFormFalse)
+
 -- | return a 'clause' list only if it contains some real clause (not a literal) 
 clausesOf :: BoolForm -> [[Int]]
 clausesOf cnf@(Cnf _ [[]]) = []
@@ -71,6 +84,7 @@ tseitinNumber (Cnf (_, n) _) = n
 
 renumber :: Int -> BoolForm -> (BoolForm, Int)
 renumber base (Cnf (m, n) l)
+  | l == [] = (Cnf (m, n) l, 0)
   | tseitinBase < base = (Cnf (m, n') l', n')
   | otherwise = (Cnf (n', tseitinBase) l', n')
   where
@@ -91,8 +105,12 @@ instance Ord BoolForm where
 -- [[3,4,-5],[-3,5],[-4,5],[5,-1,-6],[-5,6],[1,6]]
 --
 (-|-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
-(toBF -> e1) -|- (toBF -> e2') = 
-  Cnf (m, c) $ clausesOf e1 ++ clausesOf e2 ++ [[a, b, - c], [- a, c], [- b, c]]
+(toBF -> e1) -|- (toBF -> e2')
+  | isTrue e1 || isTrue e2' = e2'
+  | isFalse e1 && isFalse e2' = boolFormFalse
+  | isFalse e1 = e2'
+  | isFalse e2' = e1
+  | otherwise = Cnf (m, c) $ clausesOf e1 ++ clausesOf e2 ++ [[a, b, - c], [- a, c], [- b, c]]
   where
     a = tseitinNumber e1
     (e2, b) = renumber (1 + max tseitinBase a) e2'
@@ -108,8 +126,12 @@ instance Ord BoolForm where
 -- [[-1,-2,4],[1,-4],[2,-4],[3,4,-5],[-3,5],[-4,5]]
 --
 (-&-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
-(toBF -> e1) -&- (toBF -> e2') =
-  Cnf (m, c) $ clausesOf e1 ++ clausesOf e2 ++ [[- a, - b, c], [a, - c], [b, - c]]
+(toBF -> e1) -&- (toBF -> e2')
+  | isTrue e1 && isTrue e2' = boolFormTrue
+  | isFalse e1 || isFalse e2' = boolFormFalse
+  | isTrue e1 = e2'
+  | isTrue e2' = e1
+  | otherwise = Cnf (m, c) $ clausesOf e1 ++ clausesOf e2 ++ [[- a, - b, c], [a, - c], [b, - c]]
   where
     a = tseitinNumber e1
     (e2, b) = renumber (1 + max tseitinBase a) e2'
@@ -143,25 +165,30 @@ neg (toBF -> e) =
 
 -- | merge [BoolForm] by '(-|-)'
 disjunctionOf :: [BoolForm] -> BoolForm
-disjunctionOf [] = Cnf (0, tseitinBase) [[]]
+disjunctionOf [] = boolFormFalse
 disjunctionOf (x:l) = foldl' (-|-) x l
 (-|||-) = disjunctionOf
 
 -- | merge [BoolForm] by '(-&-)'
 conjunctionOf :: [BoolForm] -> BoolForm
-conjunctionOf [] = Cnf (0, tseitinBase) [[]]
+conjunctionOf [] = boolFormTrue
 conjunctionOf (x:l) = foldl' (-&-) x l
 (-&&&-) = conjunctionOf
 
 -- | converts a BoolForm to "[[Int]]"
 asList :: BoolForm -> [[Int]]
-asList cnf@(Cnf (m,_) _) = l'
+asList cnf@(Cnf (m,_) _)
+  | isTrue cnf = []
+  | isFalse cnf = [[]]
+  | otherwise = l'
   where
     (Cnf _ l', _) = renumber (m + 1) cnf
 
 -- | converts a *satisfied* BoolForm to "[[Int]]"
 asList' :: BoolForm -> [[Int]]
 asList' cnf@(Cnf (m,n) l)
+  | isTrue cnf = []
+  | isFalse cnf = [[]]
   | n <= tseitinBase = l
   | otherwise = [m'] : l' 
   where
