@@ -27,7 +27,7 @@ module SAT.BoolExp
 import Data.List (foldl', intercalate)
 
 tseitinBase :: Int
-tseitinBase = 800000
+tseitinBase = 1600000
 
 data L = L Int
 
