@@ -15,7 +15,9 @@ module SAT.BoolExp
        , neg
          -- * List Operation
        , disjunctionOf
+       , (-|||-)
        , conjunctionOf
+       , (-&&&-)
          -- * Convert function
        , asList
        , asList'
@@ -143,11 +145,13 @@ neg (toBF -> e) =
 disjunctionOf :: [BoolForm] -> BoolForm
 disjunctionOf [] = Cnf (0, tseitinBase) [[]]
 disjunctionOf (x:l) = foldl' (-|-) x l
+(-|||-) = disjunctionOf
 
 -- | merge [BoolForm] by '(-&-)'
 conjunctionOf :: [BoolForm] -> BoolForm
 conjunctionOf [] = Cnf (0, tseitinBase) [[]]
 conjunctionOf (x:l) = foldl' (-&-) x l
+(-&&&-) = conjunctionOf
 
 -- | converts a BoolForm to "[[Int]]"
 asList :: BoolForm -> [[Int]]
