@@ -12,7 +12,7 @@ module SAT.CNFIO
        , toFile
        , toCNFString
        , asCNFString
-       , asCNFString'
+       , asCNFString_
          -- * Bool Operation
        , module SAT.BoolExp
        )
@@ -27,5 +27,5 @@ asCNFString :: BoolForm -> String
 asCNFString = toCNFString . asList
 
 -- | String from BoolFrom
-asCNFString' :: BoolForm -> String
-asCNFString' = toCNFString . asList'
+asCNFString_ :: BoolForm -> String
+asCNFString_ = toCNFString . asList_

@@ -20,9 +20,9 @@ module SAT.BoolExp
        , (-&&&-)
          -- * Convert function
        , asList
-       , asList'
+       , asList_
        , asLatex
-       , asLatex'
+       , asLatex_
        )
        where
 
@@ -176,8 +176,8 @@ conjunctionOf (x:l) = foldl' (-&-) x l
 (-&&&-) = conjunctionOf
 
 -- | converts a BoolForm to "[[Int]]"
-asList :: BoolForm -> [[Int]]
-asList cnf@(Cnf (m,_) _)
+asList_ :: BoolForm -> [[Int]]
+asList_ cnf@(Cnf (m,_) _)
   | isTrue cnf = []
   | isFalse cnf = [[]]
   | otherwise = l'
@@ -185,8 +185,8 @@ asList cnf@(Cnf (m,_) _)
     (Cnf _ l', _) = renumber (m + 1) cnf
 
 -- | converts a *satisfied* BoolForm to "[[Int]]"
-asList' :: BoolForm -> [[Int]]
-asList' cnf@(Cnf (m,n) l)
+asList :: BoolForm -> [[Int]]
+asList cnf@(Cnf (m,n) l)
   | isTrue cnf = []
   | isFalse cnf = [[]]
   | n <= tseitinBase = l
@@ -199,23 +199,23 @@ asList' cnf@(Cnf (m,n) l)
 -- >>> asLatex $ "3" -|- "4" 
 -- "\\begin{displaymath}\n( x_{3} \\vee x_{4} )\n\\end{displaymath}\n"
 --
+asLatex_ :: BoolForm -> String
+asLatex_ b = beg ++ s ++ end
+  where
+    beg = "\\begin{displaymath}\n"
+    end = "\n\\end{displaymath}\n"
+    s = intercalate " \\wedge " [ makeClause c | c <- asList_ b]
+    makeClause c = "(" ++ intercalate "\\vee" [makeLiteral l | l <- c] ++ ")"
+    makeLiteral l
+      | 0 < l = " x_{" ++ show l ++ "} "
+      | otherwise = " \\neg " ++ "x_{" ++ show (negate l) ++ "} "
+
 asLatex :: BoolForm -> String
 asLatex b = beg ++ s ++ end
   where
     beg = "\\begin{displaymath}\n"
     end = "\n\\end{displaymath}\n"
     s = intercalate " \\wedge " [ makeClause c | c <- asList b]
-    makeClause c = "(" ++ intercalate "\\vee" [makeLiteral l | l <- c] ++ ")"
-    makeLiteral l
-      | 0 < l = " x_{" ++ show l ++ "} "
-      | otherwise = " \\neg " ++ "x_{" ++ show (negate l) ++ "} "
-
-asLatex' :: BoolForm -> String
-asLatex' b = beg ++ s ++ end
-  where
-    beg = "\\begin{displaymath}\n"
-    end = "\n\\end{displaymath}\n"
-    s = intercalate " \\wedge " [ makeClause c | c <- asList' b]
     makeClause c = "(" ++ intercalate "\\vee" [makeLiteral l | l <- c] ++ ")"
     makeLiteral l
       | 0 < l = " x_{" ++ show l ++ "} "
