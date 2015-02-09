@@ -106,7 +106,7 @@ instance Ord BoolForm where
 --
 (-|-) :: (BoolComponent a, BoolComponent b) => a -> b -> BoolForm
 (toBF -> e1) -|- (toBF -> e2')
-  | isTrue e1 || isTrue e2' = e2'
+  | isTrue e1 || isTrue e2' = boolFormTrue
   | isFalse e1 && isFalse e2' = boolFormFalse
   | isFalse e1 = e2'
   | isFalse e2' = e1
