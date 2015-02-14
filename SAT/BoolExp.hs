@@ -24,6 +24,7 @@ module SAT.BoolExp
        , asLatex
        , asLatex_
        , numberOfVariables
+       , numberOfClauses
        )
        where
 
@@ -54,6 +55,9 @@ instance BoolComponent BoolForm where
 
 numberOfVariables :: BoolForm -> Int
 numberOfVariables (Cnf (a, b) _) = a + b - tseitinBase
+
+numberOfClauses :: BoolForm -> Int
+numberOfClauses (Cnf _ l) = length l
 
 boolFormTrue = Cnf (-1, 1) []
 boolFormFalse = Cnf (-1, -1) []
