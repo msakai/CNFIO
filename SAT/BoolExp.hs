@@ -23,6 +23,7 @@ module SAT.BoolExp
        , asList_
        , asLatex
        , asLatex_
+       , numberOfVariables
        )
        where
 
@@ -50,6 +51,9 @@ instance BoolComponent [Char] where
 
 instance BoolComponent BoolForm where
   toBF = id
+
+numberOfVariables :: BoolForm -> Int
+numberOfVariables (Cnf (a, b) _) = a + b - tseitinBase
 
 boolFormTrue = Cnf (-1, 1) []
 boolFormFalse = Cnf (-1, -1) []
