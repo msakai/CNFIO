@@ -13,8 +13,8 @@ description:
 
 license:             GPL-3
 license-file:        LICENSE
-author:              Shuji Narazaki <shuji.narazaki@gmail.com>
-maintainer:          Shuji Narazaki <shuji.narazaki@gmail.com>
+author:               narazki <narazaki@nagasaki-u.ac.jp>
+maintainer:          narazaki <narazaki@nagasaki-u.ac.jp>
 -- copyright:           
 category:            Artificial Intelligence
 build-type:          Simple
@@ -22,7 +22,7 @@ cabal-version:       >=1.16
 
 source-repository head
   type:	git
-  location: git://github.com/shujinarazaki/CNFReader.git
+  location: git://github.com/shnarazk/CNFReader.git
 
 library
   buildable:	      True
